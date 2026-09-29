@@ -1,0 +1,101 @@
+PRD — Live Cricket Match Simulation & Scoring Engine
+Status: Draft
+Version: 1.0
+Type: Backend / Machine Coding Project
+
+1. Objective
+Build an in-memory cricket match simulation engine that plays a limited-overs match ball by ball and produces a final scorecard.
+
+The system should simulate the match realistically enough to demonstrate correct cricket scoring, while keeping the implementation simple and easy to extend.
+
+2. Users
+Simulator/User: Starts a match and views the final result.
+Stats Consumer: Uses batting and bowling statistics.
+Engineering Reviewer: Reviews the design, correctness, and testability.
+3. Scope
+The first version will support:
+
+T20 and ODI matches
+Two teams with 11 players each
+Toss and innings management
+Ball-by-ball simulation
+Runs: 0, 1, 2, 3, 4 and 6
+Wickets: Bowled, Caught and Run-out
+Wides and No-balls
+Striker/non-striker rotation
+Bowler over limits
+Second-innings chase
+Final batting and bowling scorecards
+Deterministic results for automated testing
+4. Match Flow
+Create Match
+     ↓
+Validate Teams
+     ↓
+Toss
+     ↓
+First Innings
+     ↓
+Calculate Target
+     ↓
+Second Innings
+     ↓
+Check Win / All-Out / Overs
+     ↓
+Generate Result & Scorecard
+The first innings ends when the team is all out or completes its allotted overs.
+
+The second innings additionally ends immediately when the chasing team reaches the target.
+
+5. Scoring Rules
+Every delivery must update the appropriate statistics.
+
+For example:
+
+A normal 4 gives 4 runs to the batter and team.
+A wide gives an extra run to the team and bowler but not the batter.
+A no-ball does not count as a legal delivery.
+A no-ball with 4 runs off the bat gives 5 team runs but 4 batter runs.
+An over consists of six legal deliveries, so wides and no-balls do not count toward the six.
+1 and 3 runs normally change the striker.
+Striker and non-striker swap at the end of every completed over.
+A run-out may dismiss either the striker or non-striker.
+6. Scorecard
+Batting
+The scorecard will show:
+
+Player
+Runs
+Balls faced
+4s
+6s
+Dismissal
+Bowling
+The scorecard will show:
+
+Bowler
+Overs
+Runs conceded
+Wickets
+7. Match Rules
+Format	Overs	Max Overs/Bowler
+T20	20	4
+ODI	50	10
+The format-specific rules should be configurable so that another limited-overs format can be added later without changing the main match flow.
+
+8. Important Edge Cases
+The system must correctly handle:
+
+All-out before the allotted overs
+Successful chase before the allotted overs
+Tie
+Wides and no-balls
+Run-out of the non-striker
+Bowler reaching the maximum over limit
+More than six physical deliveries in an over because of wides/no-balls
+No available eligible bowler
+Last available batter being dismissed
+9. Testing & Reliability
+The simulator currently uses random outcomes, but randomness must be injectable/seedable so automated tests can reproduce the same match.
+
+Key tests should cover:
