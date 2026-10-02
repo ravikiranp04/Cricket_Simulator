@@ -15,8 +15,6 @@ public class InningsScoreCard {
     public void initializeScoreBoard(Team battingTeam, Team bowlingTeam){
         this.battingTeam=battingTeam;
         this.bowlingTeam=bowlingTeam;
-        this.battingScoreCard = new BattingScoreCard(battingTeam,bowlingTeam);
-        this.bowlingScoreCard = new BowlingScoreCard(battingTeam, bowlingTeam);
     }
 
     public BattingScoreCard getBattingScoreCard() {
@@ -33,5 +31,10 @@ public class InningsScoreCard {
 
     public Team getBowlingTeam() {
         return bowlingTeam;
+    }
+
+    public void setBatAndBowlScoreCards(BattingScoreCard battingScoreCard, BowlingScoreCard bowlingScoreCard){
+        this.battingScoreCard=battingScoreCard;
+        this.bowlingScoreCard=bowlingScoreCard;
     }
 }

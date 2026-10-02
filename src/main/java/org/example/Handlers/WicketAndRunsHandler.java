@@ -106,7 +106,7 @@ public class WicketAndRunsHandler {
         BowlingPlayerStat bowlingPlayerStat = currentScoreStats.getBowlerBowlingStat();
         BattingScoreCard battingScoreCard = currentScoreStats.getBattingScoreCard();
 
-        // wide runs are added as extras to batting team and bowler
+        // wide runs are added as extras to batting team score and bowler stats
         bowlingPlayerStat.addExtras(additionalRuns+1); // additional runs + 1 wide
         battingScoreCard.addExtras(additionalRuns+1);
 

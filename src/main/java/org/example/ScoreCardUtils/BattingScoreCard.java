@@ -18,7 +18,7 @@ public class BattingScoreCard {
     private Integer wickets;
     private Integer extras;
 
-    BattingScoreCard(Team battingTeam, Team bowlingTeam){
+    public BattingScoreCard(Team battingTeam, Team bowlingTeam){
         this.battingTeam=battingTeam;
         this.bowlingTeam=bowlingTeam;
         this.playerIdToBattingStatMap = new HashMap<>();

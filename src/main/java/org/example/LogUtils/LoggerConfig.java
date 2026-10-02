@@ -15,7 +15,7 @@ public class LoggerConfig {
 
     public  static Logger configure(String matchId){
         try {
-            String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-mm-yyyy"));
+            String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
             Path logDirectory  = Paths.get("logs", date);
             Files.createDirectories(logDirectory);

@@ -18,7 +18,7 @@ public class BowlingScoreCard {
     private Integer wicketsTaken;
     Map<String,BowlingPlayerStat> playerIdToBowlingStatMap;
 
-    BowlingScoreCard(Team battingTeam, Team bowlingTeam){
+    public BowlingScoreCard(Team battingTeam, Team bowlingTeam){
         this.battingTeam=battingTeam;
         this.bowlingTeam=bowlingTeam;
         this.playerIdToBowlingStatMap = new HashMap<>();

@@ -27,15 +27,9 @@ public class LimitedOversMatch implements  Match{
     InningsScoreCard firstInningsScoreCard;
     InningsScoreCard secondInningsScoreCard;
 
-//    Player striker;
-//    Player nonStriker;
-//    BattingPlayerStat strikerBattingStat;
-//    BattingPlayerStat nonStrikerBattingStat;
 
     CurrentScoreStats currentScoreStats;
 
-//    Player bowler;
-//    BowlingPlayerStat bowlerBowlingStat;
 
     BattingScoreCard battingScoreCard;
     BowlingScoreCard bowlingScoreCard;
@@ -70,18 +64,28 @@ public class LimitedOversMatch implements  Match{
     @Override
     public void play(){
         simulateToss();
-        log.info("*******************************************************");
-        log.info("First Innings Started!!");
-        log.info("*******************************************************");
+        log.info(String.format("""
+        *******************************************************
+                    First Innings Started!!
+        *******************************************************
+        """));
+
 
         firstInningsScoreCard.initializeScoreBoard(battingTeam,bowlingTeam);
 
         playInnings(firstInningsScoreCard);
-        log.info("*******************************************************");
-        log.info("First Innings Finished!!");
-        log.info("*******************************************************");
-        log.info("First Innings Score: "+firstInningsScoreCard.getBattingScoreCard().getTotalRunsScored()+" - "+firstInningsScoreCard.getBattingScoreCard().getWickets());
-        log.info("Setting Target..............");
+        // set the local batting and bowling score card objects to first innings score card;
+        firstInningsScoreCard.setBatAndBowlScoreCards(battingScoreCard,bowlingScoreCard);
+
+        log.info(String.format("""
+        *******************************************************
+                    First Innings Finished!!
+                    First Innings Score: %d - %d
+                    Overs: %-20s
+        *******************************************************
+                    Setting Target..........
+        """, battingScoreCard.getTotalRunsScored(),battingScoreCard.getWickets(),battingScoreCard.getOversFinished()));
+
         secondInningsTarget = calculateTarget(firstInningsScoreCard);
 
         //Roles reversing for both teams
@@ -90,25 +94,31 @@ public class LimitedOversMatch implements  Match{
         log.info("Team "+ battingTeam.getTeamName()+" needs "+secondInningsTarget+" to win!!");
 
 
-        log.info("*******************************************************");
-        log.info("Second Innings Started!!");
-        log.info("*******************************************************");
-
+        log.info(String.format("""
+        *******************************************************
+                    Second Innings Started!!
+        *******************************************************
+        """));
 
         secondInningsScoreCard.initializeScoreBoard(battingTeam,bowlingTeam);
 
         playInnings(secondInningsScoreCard);
 
-        log.info("*******************************************************");
-        log.info("Second Innings Finished!!");
-        log.info("*******************************************************");
-        log.info("Second Innings Score: "+secondInningsScoreCard.getBattingScoreCard().getTotalRunsScored()+" - "+secondInningsScoreCard.getBattingScoreCard().getWickets());
+        // set the local batting and bowling score card objects to second innings score card;
+        secondInningsScoreCard.setBatAndBowlScoreCards(battingScoreCard,bowlingScoreCard);
+
+        log.info(String.format("""
+        *******************************************************
+                    Second Innings Finished!!
+                    Second Innings Score: %d - %d
+                    Overs: %-20s
+        *******************************************************
+        """, battingScoreCard.getTotalRunsScored(),battingScoreCard.getWickets(),battingScoreCard.getOversFinished()));
 
         // If chasing team got all out or overs finished before chasing
         if((!isGameFinished && allOutStatus) || (secondInningsTarget>battingScoreCard.getTotalRunsScored())){
             log.info("Team "+bowlingTeam.getTeamName()+" won by "+(secondInningsTarget-battingScoreCard.getTotalRunsScored())+" runs.");
         }
-
         log.info("Game Finished!!");
 
     }
@@ -130,8 +140,8 @@ public class LimitedOversMatch implements  Match{
         isFreeHit = false;
 
         //Getting respective batting and bowling score cards
-        battingScoreCard= inningsScoreCard.getBattingScoreCard();
-        bowlingScoreCard = inningsScoreCard.getBowlingScoreCard();
+        battingScoreCard=new BattingScoreCard(battingTeam,bowlingTeam);
+        bowlingScoreCard = new BowlingScoreCard(battingTeam, bowlingTeam);
         currentOver=1;
         //Retrieving first two batsman and bowler
         Integer  currentBowlerIdx=-1;
@@ -162,6 +172,8 @@ public class LimitedOversMatch implements  Match{
 
             log.info("Begin Over "+(currentOver-1));
 
+            log.info(LogUtils.printCurrentScoreStats(currentScoreStats));
+
             playCurrentOver();
 
             log.info("-----------------------------------------------");
@@ -176,8 +188,7 @@ public class LimitedOversMatch implements  Match{
 
     void playCurrentOver(){
         // Playing the over
-        //Printing the current score stats before startign the over
-        log.info(LogUtils.printCurrentScoreStats(currentScoreStats));
+        //Printing the current score stats before starting the over
 
         currentBall = 1;
         while(currentBall<=6){
@@ -185,7 +196,9 @@ public class LimitedOversMatch implements  Match{
                 return;
             }
 
-            log.info(String.valueOf(currentScoreStats.getOversFinished()));
+            if(isFreeHit){
+                log.info("FREE HIT!!");
+            }
 
             BallType ballResult = simulateBall();
             switch(ballResult){
@@ -239,13 +252,18 @@ public class LimitedOversMatch implements  Match{
                     break;
                 case BallType.STUMP_OUT:
                     handleStumpOut();
+                    currentBall++;
                     break;
 
             }
 
+            log.info(LogUtils.printCurrentScoreStats(currentScoreStats));
+
+
             if(allOutStatus || isGameFinished){
                 return;
             }
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -423,7 +441,6 @@ public class LimitedOversMatch implements  Match{
     }
 
     void handleNoBall(){
-        log.info("NO BALL!!");
 
         // Check if any additional run conceeded
         //possible - dot, 1,2,3,4,6
@@ -439,6 +456,7 @@ public class LimitedOversMatch implements  Match{
         WicketAndRunsHandler.handleNoBall(additionalRuns, currentScoreStats);
         isFreeHit=true;
 
+        log.info("NO BALL!!");
         // Swapping striker if additional odd no of runs scored
         if(additionalRuns%2==1){
             currentScoreStats.swapStriker();
@@ -450,10 +468,13 @@ public class LimitedOversMatch implements  Match{
     }
 
     void handleWide(){
+
+
+
         log.info("WIDE BALL!!");
 
         // Check if any additional run scored
-        //possible - dot, 1,2,3,4, stump out (5)
+        //possible - dot, 1,2,3,4
         Integer additionalRuns = random.nextInt(5);
 
         log.info("Scored "+additionalRuns+" runs.");
@@ -471,6 +492,8 @@ public class LimitedOversMatch implements  Match{
     }
 
     void handleStumpOut(){
+
+
         // to check direct stump out or wide+ stump out (if mode==0, direct stump out, if mode==1, wide+stump out)
         boolean isWide = random.nextBoolean();
 
@@ -555,8 +578,6 @@ public class LimitedOversMatch implements  Match{
             }
         }
     }
-
-
 
     void setAllOutStatus(boolean allOutStatus){
         this.allOutStatus=allOutStatus;
