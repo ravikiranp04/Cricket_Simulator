@@ -59,6 +59,9 @@ public class BowlingPlayerStat {
 
         //Updating team stats
         bowlingScoreCard.addExtras(extraRuns);
+
+        // increase bowler runs conceeded
+        increaseRunsConceeded(extraRuns);
     }
 
     public void setRunsConceeded(Integer runsConceeded) {

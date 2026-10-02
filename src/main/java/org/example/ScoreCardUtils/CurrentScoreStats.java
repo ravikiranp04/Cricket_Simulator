@@ -52,12 +52,12 @@ public class CurrentScoreStats {
 
     public void changeStriker(Player newStriker,BattingPlayerStat newStrikerBattingStat){
         this.strikerBattingStat=newStrikerBattingStat;
-        this.striker=striker;
+        this.striker=newStriker;
     }
 
     public void changeNonStriker(Player newNonStriker,BattingPlayerStat newNonStrikerBattingStat){
         this.nonStrikerBattingStat=newNonStrikerBattingStat;
-        this.nonStriker=nonStriker;
+        this.nonStriker=newNonStriker;
     }
 
     public void changeBowler(Player newBowler, BowlingPlayerStat bowlerBowlingStat){

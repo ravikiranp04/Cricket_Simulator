@@ -29,8 +29,6 @@ public class LimitedOversMatch implements  Match{
 
 
     CurrentScoreStats currentScoreStats;
-
-
     BattingScoreCard battingScoreCard;
     BowlingScoreCard bowlingScoreCard;
 
@@ -176,8 +174,11 @@ public class LimitedOversMatch implements  Match{
 
             playCurrentOver();
 
+            //after every over, swap striker and non striker
+            currentScoreStats.swapStriker();
             log.info("-----------------------------------------------");
 
+            // If all out or target chased, return
             if(isGameFinished || allOutStatus){
                 return;
             }
@@ -257,8 +258,12 @@ public class LimitedOversMatch implements  Match{
 
             }
 
+            // print score stats after every ball
             log.info(LogUtils.printCurrentScoreStats(currentScoreStats));
 
+            if(allOutStatus){
+                log.info("ALL OUT!!");
+            }
 
             if(allOutStatus || isGameFinished){
                 return;
@@ -395,7 +400,6 @@ public class LimitedOversMatch implements  Match{
             String runOutPlayer = bowlingTeam.getPlayerName(runOutPlayerIdx);
 
             //which side hit? 0 -> striker out, 1 -> striker not out
-
             Integer side = random.nextInt(2);
 
             if(side==1){
@@ -446,11 +450,11 @@ public class LimitedOversMatch implements  Match{
         //possible - dot, 1,2,3,4,6
         Integer additionalRuns = random.nextInt(6);
         if(additionalRuns==5){
-            log.info("Scored Six Runs!!");
+            log.info(currentScoreStats.getStriker().getPlayerName()+" scored Six Runs!!");
             additionalRuns=6;
         }
         else{
-            log.info("Scored "+additionalRuns+" runs!!");
+            log.info(currentScoreStats.getStriker().getPlayerName()+" Scored "+additionalRuns+" runs!!");
 
         }
         WicketAndRunsHandler.handleNoBall(additionalRuns, currentScoreStats);
@@ -469,15 +473,13 @@ public class LimitedOversMatch implements  Match{
 
     void handleWide(){
 
-
-
         log.info("WIDE BALL!!");
 
-        // Check if any additional run scored
+        // Check if any additional run scored, wicket keeper misses the ball and batsmen can take extra runs
         //possible - dot, 1,2,3,4
         Integer additionalRuns = random.nextInt(5);
 
-        log.info("Scored "+additionalRuns+" runs.");
+        log.info(battingTeam.getTeamName()+" got "+additionalRuns+" extra runs.");
         WicketAndRunsHandler.handleWide(additionalRuns,currentScoreStats);
 
         //swap striker if odd number of extra runs.
@@ -488,11 +490,9 @@ public class LimitedOversMatch implements  Match{
         if(checkIfSecondInningsTeamChased()){
             return;
         }
-
     }
 
     void handleStumpOut(){
-
 
         // to check direct stump out or wide+ stump out (if mode==0, direct stump out, if mode==1, wide+stump out)
         boolean isWide = random.nextBoolean();
@@ -502,7 +502,7 @@ public class LimitedOversMatch implements  Match{
         if(isFreeHit){
             log.info("NOT OUT DUE TO FREE HIT!");
 
-            // Free hit dont continue for a legal ball
+            // Free hit don't continue for a legal ball
             if(!isWide){
                 isFreeHit=false;
                 return;
@@ -589,14 +589,13 @@ public class LimitedOversMatch implements  Match{
         }
         Integer currentRuns = battingScoreCard.getTotalRunsScored();
         Integer ballsLeft = (noOfOvers*6)-((currentOver-1)*6+currentBall-1);
-        log.info((battingScoreCard.getTotalRunsScored()-currentRuns)+"runs needed of"+ballsLeft+" balls.");
         if(secondInningsTarget<=battingScoreCard.getTotalRunsScored()){
             log.info("Team "+battingTeam.getTeamName()+" won by "+ (10 - battingScoreCard.getWickets())+" wickets!!");
             isGameFinished=true;
             return true;
         }
+        log.info((secondInningsTarget-currentRuns+1)+" runs needed of "+ballsLeft+" balls.");
         return false;
-
     }
 
     public void UpdateNewStriker(){
@@ -607,6 +606,8 @@ public class LimitedOversMatch implements  Match{
         BattingPlayerStat newStrikerBattingStat = battingScoreCard.getPlayerBattingStat(newStriker);
 
         currentScoreStats.changeStriker(newStriker, newStrikerBattingStat);
+
+        log.info("New Batsman: "+newStriker.getPlayerName()+" (Striker)");
     }
 
     public void UpdateNewNonStriker(){
@@ -617,6 +618,7 @@ public class LimitedOversMatch implements  Match{
         BattingPlayerStat newNonStrikerBattingStat = battingScoreCard.getPlayerBattingStat(newNonStriker);
 
         currentScoreStats.changeNonStriker(newNonStriker, newNonStrikerBattingStat);
+        log.info("New Batsman: "+newNonStriker.getPlayerName()+" (Non Striker)");
     }
 
 }
