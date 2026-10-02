@@ -8,6 +8,7 @@ public class InningsScoreCard {
 
     private BattingScoreCard battingScoreCard;
     private BowlingScoreCard bowlingScoreCard;
+
     private Team battingTeam;
     private Team bowlingTeam;
 

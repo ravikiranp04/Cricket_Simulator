@@ -1,6 +1,7 @@
 package org.example.ScoreCardUtils.ScoreCardStats;
 
 import org.example.Player;
+import org.example.ScoreCardUtils.BowlingScoreCard;
 
 import java.math.BigDecimal;
 import java.util.concurrent.locks.AbstractOwnableSynchronizer;
@@ -9,33 +10,32 @@ public class BowlingPlayerStat {
 
 
     private String playerName;
-    private BigDecimal oversFinished;
-    private Integer runsConceeded=0;
-    private Integer extras=0;
-    private Integer wicketsTaken=0;
-
-
-
-    //    private BowlingPlayerStat(BowlingStatBuilder bowlingStatBuilder){
-//        this.playerName= bowlingStatBuilder.playerName;
-//        this.oversFinished= bowlingStatBuilder.oversFinished;
-//        this.runsConceeded=bowlingStatBuilder.runsConceeded;
-//        this.extras = bowlingStatBuilder.extras;
-//    }
-    public  BowlingPlayerStat(String playerName){
+    private Integer ballsDelivered;
+    private Integer runsConceeded;
+    private Integer extras;
+    private Integer wicketsTaken;
+    private BowlingScoreCard bowlingScoreCard;
+    public  BowlingPlayerStat(String playerName, BowlingScoreCard bowlingScoreCard){
         this.playerName=playerName;
         this.runsConceeded=0;
         this.extras=0;
         this.wicketsTaken=0;
-        this.oversFinished=BigDecimal.ZERO;
+        this.bowlingScoreCard=bowlingScoreCard;
+        this.ballsDelivered=0;
     }
 
-    public BigDecimal getOversFinished() {
-        return oversFinished;
+
+    public void increaseBallsDeliveredByBowler(){
+        ballsDelivered++;
+
+        //update teams stats
+        bowlingScoreCard.increaseBallsDelivered();
     }
 
-    public void setOversFinished(BigDecimal oversFinished) {
-        this.oversFinished = oversFinished;
+    public BigDecimal getOversFinishedByBowler() {
+        Integer overs = ballsDelivered/6;
+        Integer balls = ballsDelivered%6;
+        return new BigDecimal(overs + "." + balls);
     }
 
     public Integer getRunsConceeded() {
@@ -44,19 +44,23 @@ public class BowlingPlayerStat {
 
     public void increaseRunsConceeded(Integer runs){
         runsConceeded+=runs;
+
+        //updating team stats
+        bowlingScoreCard.increaseRunsConceededByTeam(runs);
     }
 
     public void addWicket(){
         wicketsTaken+=1;
+        bowlingScoreCard.addWicket();
     }
 
     public void addExtras(Integer extraRuns){
         extras+=extraRuns;
+
+        //Updating team stats
+        bowlingScoreCard.addExtras(extraRuns);
     }
 
-    public void increaseBallsDelivered(){
-        oversFinished=oversFinished.add(new BigDecimal("0.1")).setScale(1);
-    }
     public void setRunsConceeded(Integer runsConceeded) {
         this.runsConceeded = runsConceeded;
     }
@@ -81,33 +85,4 @@ public class BowlingPlayerStat {
         return wicketsTaken;
     }
 
-//    private static class BowlingStatBuilder{
-//        private String playerName;
-//        private Double oversFinished;
-//        private Integer runsConceeded;
-//        private Integer extras;
-//
-//        public BowlingStatBuilder player(String playerName){
-//            this.playerName=playerName;
-//            return this;
-//        }
-//        public BowlingStatBuilder oversFinished(Double oversFinished){
-//            this.oversFinished=oversFinished;
-//            return this;
-//        }
-//
-//        public  BowlingStatBuilder runsConceeded(Integer runs){
-//            this.runsConceeded=runs;
-//            return this;
-//        }
-//
-//        public BowlingStatBuilder extras(Integer extras){
-//            this.extras=extras;
-//            return this;
-//        }
-//
-//        public BowlingPlayerStat build(){
-//            return new BowlingPlayerStat(this);
-//        }
-//    }
 }

@@ -4,6 +4,7 @@ import org.example.Player;
 import org.example.ScoreCardUtils.ScoreCardStats.BattingPlayerStat;
 import org.example.Team;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,14 +13,10 @@ public class BattingScoreCard {
     private Team battingTeam;
     private Team bowlingTeam;
     Map<String, BattingPlayerStat> playerIdToBattingStatMap;
-
-    private Integer totalRunsScored=0;
-
-
-
-    private Integer wickets=0;
-
-    private Integer extras=0;
+    private Integer totalRunsScored;
+    private Integer ballsFacedByTeam;
+    private Integer wickets;
+    private Integer extras;
 
     BattingScoreCard(Team battingTeam, Team bowlingTeam){
         this.battingTeam=battingTeam;
@@ -28,6 +25,7 @@ public class BattingScoreCard {
         this.extras=0;
         this.totalRunsScored=0;
         this.wickets=0;
+        this.ballsFacedByTeam=0;
     }
     public Integer getWickets() {
         return wickets;
@@ -40,8 +38,10 @@ public class BattingScoreCard {
         totalRunsScored+=runs;
     }
 
-    public void increaseExtras(Integer extraRuns){
+    public void addExtras(Integer extraRuns){
         extras+=extraRuns;
+        //Add extra runs to team score
+        increaseTeamsScore(extraRuns);
     }
 
     public Team getBowlingTeam() {
@@ -50,7 +50,7 @@ public class BattingScoreCard {
     public BattingPlayerStat getPlayerBattingStat(Player player) {
         String playerId= player.getPlayerId();
         if(!playerIdToBattingStatMap.containsKey(playerId)){
-            playerIdToBattingStatMap.put(playerId, new BattingPlayerStat(player.getPlayerName()));
+            playerIdToBattingStatMap.put(playerId, new BattingPlayerStat(player.getPlayerName(),this));
         }
         return playerIdToBattingStatMap.get(playerId);
     }
@@ -73,6 +73,16 @@ public class BattingScoreCard {
 
     public void setExtras(Integer extras) {
         this.extras = extras;
+    }
+
+    public void increaseBallsFacedByTeam() {
+        ballsFacedByTeam+=1;
+    }
+
+    public BigDecimal getOversFinished(){
+        Integer overs = ballsFacedByTeam/6;
+        Integer balls = ballsFacedByTeam%6;
+        return new BigDecimal(overs + "." + balls);
     }
 
 }

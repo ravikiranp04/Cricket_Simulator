@@ -1,6 +1,7 @@
 package org.example.ScoreCardUtils.ScoreCardStats;
 
 import org.example.Player;
+import org.example.ScoreCardUtils.BattingScoreCard;
 
 import java.security.PublicKey;
 
@@ -14,9 +15,15 @@ public class BattingPlayerStat {
     private Integer sixesHit;
     private Integer foursHit;
     private boolean isOut;
-
-    public  BattingPlayerStat(){
-
+    private  BattingScoreCard battingScoreCard;
+    public  BattingPlayerStat(String playerName, BattingScoreCard battingScoreCard){
+        this.playerName=playerName;
+        this.battingScoreCard=battingScoreCard;
+        this.battingScore=0;
+        this.ballsFaced=0;
+        this.foursHit=0;
+        this.sixesHit=0;
+        this.isOut=false;
     }
 
     public Integer getFoursHit() {
@@ -25,6 +32,8 @@ public class BattingPlayerStat {
 
     public void increaseBattingScore(Integer runs){
         battingScore+=runs;
+        //Update teams score
+        battingScoreCard.increaseTeamsScore(runs);
     }
 
     public void increaseSixesHit(){
@@ -36,14 +45,13 @@ public class BattingPlayerStat {
 
     public void increaseBallsFaced(){
         ballsFaced+=1;
+        //Update teams stats
+        battingScoreCard.increaseBallsFacedByTeam();
     }
 
     public String getPlayerName() {
         return playerName;
     }
-
-
-
 
     public String getOutReason() {
         return outReason;
@@ -74,73 +82,9 @@ public class BattingPlayerStat {
     public void sendOut(String outReason) {
         isOut = true;
         setOutReason(outReason);
-    }
 
-    public BattingPlayerStat(String playerName){
-        this.playerName=playerName;
-        this.ballsFaced=0;
-        this.battingScore=0;
-        this.sixesHit=0;
-        this.foursHit=0;
+        //Add wicket to teams stats
+        battingScoreCard.addWicket();
     }
-
-//    private BattingPlayerStat(BattingStatBuilder battingStatBuilder ){
-//        this.playerName = battingStatBuilder.playerName;;
-//        this.outReason=battingStatBuilder.outReason;
-//        this.battingScore=battingStatBuilder.battingScore;
-//        this.ballsFaced=battingStatBuilder.ballsFaced;
-//        this.sixesHit=battingStatBuilder.sixesHit;
-//        this.foursHit=battingStatBuilder.foursHit;
-//        this.isOut=battingStatBuilder.isOut;
-//    }
-//    public static class BattingStatBuilder{
-//        private String playerName;
-//        private String outReason;
-//        private Integer battingScore;
-//        private Integer ballsFaced;
-//        private Integer sixesHit;
-//        private Integer foursHit;
-//        private boolean isOut;
-//
-//
-//        public BattingStatBuilder player(String playerName){
-//            this.playerName=playerName;
-//            return this;
-//        }
-//
-//        public BattingStatBuilder outReason(String reason){
-//            this.outReason=reason;
-//            return this;
-//        }
-//
-//        public BattingStatBuilder battingScore(Integer battingScore){
-//            this.battingScore=battingScore;
-//            return this;
-//        }
-//
-//        public BattingStatBuilder ballsFaced(Integer ballsFaced){
-//            this.ballsFaced=ballsFaced;
-//            return this;
-//        }
-//
-//        public BattingStatBuilder sixesHit(Integer sixesHit){
-//            this.sixesHit=sixesHit;
-//            return this;
-//        }
-//        public BattingStatBuilder foursHit(Integer foursHit){
-//            this.foursHit=foursHit;
-//            return this;
-//        }
-//
-//        public BattingStatBuilder isOut(boolean isOut){
-//            this.isOut=isOut;
-//            return this;
-//        }
-//
-//        public  BattingPlayerStat build(){
-//            return new BattingPlayerStat(this);
-//        }
-//
-//    }
 
 }

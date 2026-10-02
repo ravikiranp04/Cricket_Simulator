@@ -1,10 +1,13 @@
 package org.example.MatchUtils;
 
 
-import org.example.LoggerConfig;
+import org.example.Handlers.WicketAndRunsHandler;
+import org.example.LogUtils.LogUtils;
+import org.example.LogUtils.LoggerConfig;
 import org.example.Player;
 import org.example.ScoreCardUtils.BattingScoreCard;
 import org.example.ScoreCardUtils.BowlingScoreCard;
+import org.example.ScoreCardUtils.CurrentScoreStats;
 import org.example.ScoreCardUtils.InningsScoreCard;
 import org.example.ScoreCardUtils.ScoreCardStats.BattingPlayerStat;
 import org.example.ScoreCardUtils.ScoreCardStats.BowlingPlayerStat;
@@ -24,13 +27,15 @@ public class LimitedOversMatch implements  Match{
     InningsScoreCard firstInningsScoreCard;
     InningsScoreCard secondInningsScoreCard;
 
-    Player striker;
-    Player nonStriker;
-    BattingPlayerStat strikerBattingStat;
-    BattingPlayerStat nonStrikerBattingStat;
+//    Player striker;
+//    Player nonStriker;
+//    BattingPlayerStat strikerBattingStat;
+//    BattingPlayerStat nonStrikerBattingStat;
 
-    Player bowler;
-    BowlingPlayerStat bowlerBowlingStat;
+    CurrentScoreStats currentScoreStats;
+
+//    Player bowler;
+//    BowlingPlayerStat bowlerBowlingStat;
 
     BattingScoreCard battingScoreCard;
     BowlingScoreCard bowlingScoreCard;
@@ -131,27 +136,32 @@ public class LimitedOversMatch implements  Match{
         //Retrieving first two batsman and bowler
         Integer  currentBowlerIdx=-1;
         currentBatterIdx=-1;
-        striker = battingTeam.getNextBatter(currentBatterIdx);
+        Player striker = battingTeam.getNextBatter(currentBatterIdx);
         currentBatterIdx+=1;
         log.info("New Batsman: Striker -> "+striker.getPlayerName());
 
-        nonStriker = battingTeam.getNextBatter(currentBatterIdx);
+        Player nonStriker = battingTeam.getNextBatter(currentBatterIdx);
         currentBatterIdx+=1;
         log.info("New Batsman: Non Striker -> "+nonStriker.getPlayerName());
 
-        strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
+        BattingPlayerStat strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
 
-        nonStrikerBattingStat = battingScoreCard.getPlayerBattingStat(nonStriker);
+        BattingPlayerStat nonStrikerBattingStat = battingScoreCard.getPlayerBattingStat(nonStriker);
 
-        
+        currentScoreStats = new CurrentScoreStats(striker, nonStriker, strikerBattingStat,nonStrikerBattingStat,battingScoreCard,bowlingScoreCard);
+
         while(currentOver<=noOfOvers){
             //Bowlers will be used in a round robin manner
-            bowler = bowlingTeam.getNextBowler(currentBowlerIdx);
+            Player bowler = bowlingTeam.getNextBowler(currentBowlerIdx);
             currentBowlerIdx=(currentBowlerIdx+1)%bowlingTeam.getBowlersCount();
 
-            bowlerBowlingStat = bowlingScoreCard.getPlayerBowlingStat(bowler);
+            BowlingPlayerStat bowlerBowlingStat = bowlingScoreCard.getPlayerBowlingStat(bowler);
+
+            // Change the bowler in the current score board;
+            currentScoreStats.changeBowler(bowler, bowlerBowlingStat);
 
             log.info("Begin Over "+(currentOver-1));
+
             playCurrentOver();
 
             log.info("-----------------------------------------------");
@@ -166,16 +176,16 @@ public class LimitedOversMatch implements  Match{
 
     void playCurrentOver(){
         // Playing the over
-        log.info("Striker: "+striker.getPlayerName()+"\t"+strikerBattingStat.getBattingScore()+"*");
-        log.info("Non Striker: "+striker.getPlayerName()+"\t"+strikerBattingStat.getBattingScore()+"*");
-        log.info("Bowler: "+bowler.getPlayerName()+"\t"+"Overs: "+ bowlerBowlingStat.getOversFinished()+"\t "+bowlerBowlingStat.getRunsConceeded()+" - "+bowlerBowlingStat.getWicketsTaken());
+        //Printing the current score stats before startign the over
+        log.info(LogUtils.printCurrentScoreStats(currentScoreStats));
+
         currentBall = 1;
-        while(currentBall<6){
+        while(currentBall<=6){
             if(allOutStatus){
                 return;
             }
 
-            log.info("Overs: "+(currentOver-1)+"."+(currentBall-1));
+            log.info(String.valueOf(currentScoreStats.getOversFinished()));
 
             BallType ballResult = simulateBall();
             switch(ballResult){
@@ -183,37 +193,31 @@ public class LimitedOversMatch implements  Match{
                     log.info("DOT BALL!!");
                     handleRuns(0);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.ONE_RUN:
                     log.info("1 Run!!");
                     handleRuns(1);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.TWO_RUN:
                     log.info("2 Runs!!");
                     handleRuns(2);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.THREE_RUN:
                     log.info("3 Runs!!");
                     handleRuns(3);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.FOUR:
                     log.info("FOUR!!");
                     handleRuns(4);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.SIX:
                     log.info("SIX!!");
                     handleRuns(6);
                     currentBall++;
-                    bowlerBowlingStat.increaseBallsDelivered();
                     break;
                 case BallType.BOWLED:
                     handleWicket(BallType.BOWLED);
@@ -233,6 +237,9 @@ public class LimitedOversMatch implements  Match{
                 case BallType.WIDE_BALL:
                     handleWide();
                     break;
+                case BallType.STUMP_OUT:
+                    handleStumpOut();
+                    break;
 
             }
 
@@ -250,7 +257,7 @@ public class LimitedOversMatch implements  Match{
     }
 
     BallType simulateBall(){
-        Integer ballResult = random.nextInt(11);
+        Integer ballResult = random.nextInt(12);
         switch (ballResult){
             case 0:
                 return BallType.DOT_BALL;
@@ -274,6 +281,8 @@ public class LimitedOversMatch implements  Match{
                 return BallType.NO_BALL;
             case 10:
                 return BallType.WIDE_BALL;
+            case 11:
+                return BallType.STUMP_OUT;
             default:
                 log.info("Invalid Ball");
                 break;
@@ -282,26 +291,8 @@ public class LimitedOversMatch implements  Match{
     }
 
     void handleRuns(Integer runs){
-        //Update batter stats
-        strikerBattingStat.increaseBattingScore(runs);
-        strikerBattingStat.increaseBallsFaced();
 
-        //update batting team stats
-        battingScoreCard.increaseTeamsScore(runs);
-
-        //Update bowler stats
-        bowlerBowlingStat.increaseRunsConceeded(runs);
-
-        //check if striker rotated
-        if(runs%2==1){
-            swapStriker();
-        }
-        else if(runs==4){
-            strikerBattingStat.increaseFoursHit(); //Updating fours hit in batter stats
-        }
-        else if(runs==6){
-            strikerBattingStat.increaseFoursHit(); //Updating Sixes hit in batter stats
-        }
+        WicketAndRunsHandler.handleRuns(runs,currentScoreStats);
 
         //Set free hit status to normal if the delivery was a free hit
         if(isFreeHit){
@@ -322,32 +313,23 @@ public class LimitedOversMatch implements  Match{
             if(isFreeHit){
                 log.info("NOT OUT DUE TO FREE HIT!");
                 isFreeHit = false;
+                return;
             }
 
             //who caught? (choose one random player from bowling team for simulation)
-            Integer caughtPlayerIdx = random.nextInt(11);
-            String caughtPlayerName = bowlingTeam.getPlayerName(caughtPlayerIdx);
+            Integer caughtFielderIdx = random.nextInt(11);
+            String caughtFielderName = bowlingTeam.getPlayerName(caughtFielderIdx);
 
-            //Update Batter and batting team stats
-            strikerBattingStat.sendOut("c "+caughtPlayerName+" \t b "+bowler.getPlayerName());
-            battingScoreCard.addWicket();
-
-            //Update bowler and bowling team stats
-            bowlerBowlingStat.addWicket();
-            battingScoreCard.addWicket();
+            WicketAndRunsHandler.handleCaughtWicket(caughtFielderName,currentScoreStats);
 
             //check if all out
-            if(currentBatterIdx==10){
+            if(currentBatterIdx==10) {
                 setAllOutStatus(true);
                 return;
             }
 
             //Get new striker batsman
-            striker=battingTeam.getNextBatter(currentBatterIdx);
-            currentBatterIdx=currentBatterIdx+1;
-
-            strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
-
+            UpdateNewStriker();
         }
         else if (ballType.equals(BallType.BOWLED)){
             log.info("BOWLED!!");
@@ -358,12 +340,7 @@ public class LimitedOversMatch implements  Match{
                 return;
             }
 
-            //Update Batter and batting team stats
-            strikerBattingStat.sendOut("b "+bowler.getPlayerName());
-            battingScoreCard.addWicket();
-
-            //Update bowler and bowling team stats
-            bowlerBowlingStat.addWicket();
+            WicketAndRunsHandler.handleBowledWicket(currentScoreStats);
 
             //check if all out
             if(currentBatterIdx==10){
@@ -372,10 +349,7 @@ public class LimitedOversMatch implements  Match{
             }
 
             //Get new striker batsman
-            striker=battingTeam.getNextBatter(currentBatterIdx);
-            currentBatterIdx=currentBatterIdx+1;
-
-            strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
+            UpdateNewStriker();
         }
         else{
             log.info("Run Out!!");
@@ -384,13 +358,17 @@ public class LimitedOversMatch implements  Match{
                 log.info("FREE HIT!");
                 isFreeHit = false;
             }
-
+            //Runs taken before run out by striker
             Integer extraRuns = random.nextInt(4);
-            Integer totalRuns = extraRuns+1;
+
+            BattingPlayerStat strikerBattingStat = currentScoreStats.getStrikerBattingStat();
+            BattingPlayerStat nonStrikerBattingStat = currentScoreStats.getNonStrikerBattingStat();
+            strikerBattingStat.increaseBattingScore(extraRuns);
+            strikerBattingStat.increaseBallsFaced();
 
             //swap striker if odd number of extra runs.
             if(extraRuns%2==1){
-                swapStriker();
+                currentScoreStats.swapStriker();
             }
 
             // Run Out by?
@@ -404,15 +382,7 @@ public class LimitedOversMatch implements  Match{
 
             if(side==1){
                 //Updating striker and team stats
-                strikerBattingStat.sendOut("(Run Out) "+runOutPlayer);
-                strikerBattingStat.increaseBattingScore(extraRuns);
-                battingScoreCard.increaseExtras(1);
-                battingScoreCard.increaseTeamsScore(totalRuns);
-                battingScoreCard.addWicket();
-
-                //updating bowler stats
-                bowlerBowlingStat.increaseRunsConceeded(totalRuns);
-                bowlingScoreCard.increaseExtras(1);
+                WicketAndRunsHandler.handleRunOut(strikerBattingStat,runOutPlayer,extraRuns,currentScoreStats);
 
                 //Check if its second innings and score chased successfully
                 if(checkIfSecondInningsTeamChased()){
@@ -423,29 +393,15 @@ public class LimitedOversMatch implements  Match{
                 }
 
                 //check if all out
-
                 if(currentBatterIdx==10){
                     setAllOutStatus(true);
                     return;
                 }
-
-                //get new striker
-                striker=battingTeam.getNextBatter(currentBatterIdx);
-                currentBatterIdx=currentBatterIdx+1;
-
-                strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
+                UpdateNewStriker();
             }
             else{
                 //Updating non striker and team stats
-                nonStrikerBattingStat.increaseBattingScore(extraRuns);
-                battingScoreCard.increaseExtras(1);
-                battingScoreCard.increaseTeamsScore(totalRuns);
-                nonStrikerBattingStat.sendOut("(Run Out) "+runOutPlayer);
-                battingScoreCard.addWicket();
-
-                //updating bowler stats
-                bowlerBowlingStat.increaseRunsConceeded(totalRuns);
-                bowlingScoreCard.increaseExtras(1);
+                WicketAndRunsHandler.handleRunOut(nonStrikerBattingStat,runOutPlayer,extraRuns,currentScoreStats);
 
                 //Check if its second innings and score chased successfully
                 if(checkIfSecondInningsTeamChased()){
@@ -460,14 +416,9 @@ public class LimitedOversMatch implements  Match{
                     return;
                 }
 
-                //get new striker
-                nonStriker=battingTeam.getNextBatter(currentBatterIdx);
-                currentBatterIdx=currentBatterIdx+1;
-
-                nonStrikerBattingStat = battingScoreCard.getPlayerBattingStat(nonStriker);
-
+                //get new non striker
+                UpdateNewNonStriker();
             }
-
         }
     }
 
@@ -476,33 +427,22 @@ public class LimitedOversMatch implements  Match{
 
         // Check if any additional run conceeded
         //possible - dot, 1,2,3,4,6
-        Integer extraRuns = random.nextInt(6);
-        if(extraRuns==5){
+        Integer additionalRuns = random.nextInt(6);
+        if(additionalRuns==5){
             log.info("Scored Six Runs!!");
+            additionalRuns=6;
         }
         else{
-            log.info("Scored "+extraRuns+" runs!!");
+            log.info("Scored "+additionalRuns+" runs!!");
 
         }
-        log.info("Free Hit!!");
+        WicketAndRunsHandler.handleNoBall(additionalRuns, currentScoreStats);
         isFreeHit=true;
-        Integer totalRuns = extraRuns+1;
-
-        //Update striker stats - gets only extra scored runs
-        strikerBattingStat.increaseBattingScore(extraRuns);
-        //update bowler stats
-        bowlerBowlingStat.increaseRunsConceeded(totalRuns);
-        //update batting team stats
-        battingScoreCard.increaseTeamsScore(totalRuns);
-        battingScoreCard.increaseExtras(1);
-        //update bowling team stats
-        bowlingScoreCard.increaseExtras(1);
 
         // Swapping striker if additional odd no of runs scored
-        if(extraRuns%2==1){
-            swapStriker();
+        if(additionalRuns%2==1){
+            currentScoreStats.swapStriker();
         }
-
         if(checkIfSecondInningsTeamChased()){
             return;
         }
@@ -514,68 +454,61 @@ public class LimitedOversMatch implements  Match{
 
         // Check if any additional run scored
         //possible - dot, 1,2,3,4, stump out (5)
-        Integer extraRuns = random.nextInt(6);
+        Integer additionalRuns = random.nextInt(5);
 
-        //Stump Out
-        if(extraRuns==5){
-            log.info("STUMP OUT!!");
-            // Not out due to free hit and free hit continue due to wide ball
-            if(isFreeHit){
-                log.info("NOT OUT DUE TO FREE HIT!");
+        log.info("Scored "+additionalRuns+" runs.");
+        WicketAndRunsHandler.handleWide(additionalRuns,currentScoreStats);
+
+        //swap striker if odd number of extra runs.
+        if(additionalRuns%2==1){
+            currentScoreStats.swapStriker();
+        }
+
+        if(checkIfSecondInningsTeamChased()){
+            return;
+        }
+
+    }
+
+    void handleStumpOut(){
+        // to check direct stump out or wide+ stump out (if mode==0, direct stump out, if mode==1, wide+stump out)
+        boolean isWide = random.nextBoolean();
+
+        log.info("STUMP OUT!!");
+        // Not out due to free hit and free hit continue due to wide ball
+        if(isFreeHit){
+            log.info("NOT OUT DUE TO FREE HIT!");
+
+            // Free hit dont continue for a legal ball
+            if(!isWide){
+                isFreeHit=false;
                 return;
             }
+        }
 
-            //Updating batter and team stats
-            strikerBattingStat.sendOut("(Stump Out) "+bowlingTeam.getWicketKeeper().getPlayerName()+" \tb "+bowler.getPlayerName());
-            battingScoreCard.addWicket();
-            battingScoreCard.increaseExtras(1);
-            //updating bowler stats
-            bowlerBowlingStat.increaseRunsConceeded(1);
-            bowlerBowlingStat.addWicket();
-            bowlingScoreCard.increaseExtras(1);
+        String wicketKeeperName = bowlingTeam.getWicketKeeper().getPlayerName();
 
-            //Check if its second innings and score chased successfully
-            if(checkIfSecondInningsTeamChased()){
-                if(currentBatterIdx==10){
-                    setAllOutStatus(true);
-                }
-                return;
-            }
-
-            //check if all out
-            if(currentBatterIdx==10){
-                setAllOutStatus(true);
-                return;
-            }
-
-            //Get new striker batsman
-            striker=battingTeam.getNextBatter(currentBatterIdx);
-            currentBatterIdx=currentBatterIdx+1;
-
-            strikerBattingStat = battingScoreCard.getPlayerBattingStat(striker);
-
+        if(isWide){
+            WicketAndRunsHandler.handleStumpOut(wicketKeeperName, currentScoreStats,true);
         }
         else{
-            log.info("Scored "+extraRuns+" runs.");
-            Integer totalRuns = extraRuns+1;
-            //Updating batter and team stats
-            strikerBattingStat.increaseBattingScore(extraRuns);
-            battingScoreCard.increaseExtras(1);
-            battingScoreCard.increaseTeamsScore(totalRuns);
-
-            //updating bowler stats
-            bowlerBowlingStat.increaseRunsConceeded(totalRuns);
-            bowlingScoreCard.increaseExtras(1);
-
-            //swap striker if odd number of extra runs.
-            if(extraRuns%2==1){
-                swapStriker();
-            }
-
-            if(checkIfSecondInningsTeamChased()){
-                return;
-            }
+            WicketAndRunsHandler.handleStumpOut(wicketKeeperName, currentScoreStats,false);
         }
+
+        //Check if its second innings and score chased successfully
+        if(checkIfSecondInningsTeamChased()){
+            if(currentBatterIdx==10){
+                setAllOutStatus(true);
+            }
+            return;
+        }
+
+        if(currentBatterIdx==10){
+            setAllOutStatus(true);
+            return;
+        }
+        //get a new striker
+        UpdateNewStriker();
     }
 
     void simulateToss(){
@@ -623,18 +556,7 @@ public class LimitedOversMatch implements  Match{
         }
     }
 
-    void swapStriker(){
-        swapStatisticsMaps();
-        Player temp = nonStriker;
-        nonStriker=striker;
-        striker=temp;
-    }
 
-    void swapStatisticsMaps(){
-        BattingPlayerStat temp= nonStrikerBattingStat;
-        nonStrikerBattingStat=strikerBattingStat;
-        strikerBattingStat=temp;
-    }
 
     void setAllOutStatus(boolean allOutStatus){
         this.allOutStatus=allOutStatus;
@@ -652,10 +574,28 @@ public class LimitedOversMatch implements  Match{
             isGameFinished=true;
             return true;
         }
-
         return false;
 
     }
 
+    public void UpdateNewStriker(){
+        //Get new striker batsman
+        Player newStriker=battingTeam.getNextBatter(currentBatterIdx);
+        currentBatterIdx=currentBatterIdx+1;
+
+        BattingPlayerStat newStrikerBattingStat = battingScoreCard.getPlayerBattingStat(newStriker);
+
+        currentScoreStats.changeStriker(newStriker, newStrikerBattingStat);
+    }
+
+    public void UpdateNewNonStriker(){
+        //Get new striker batsman
+        Player newNonStriker=battingTeam.getNextBatter(currentBatterIdx);
+        currentBatterIdx=currentBatterIdx+1;
+
+        BattingPlayerStat newNonStrikerBattingStat = battingScoreCard.getPlayerBattingStat(newNonStriker);
+
+        currentScoreStats.changeNonStriker(newNonStriker, newNonStrikerBattingStat);
+    }
 
 }
