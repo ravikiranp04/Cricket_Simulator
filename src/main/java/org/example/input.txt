@@ -1,0 +1,25 @@
+20
+Hyderabad
+Ravi BATTER
+Kiran BATTER
+Shiva BATTER
+Varun BATTER
+Sharan WICKET_KEEPER
+Rishi BATTER
+Krishna BOWLER
+Chenna BOWLER
+Akhil BOWLER
+Deepak BOWLER
+Chaitanya BOWLER
+Mumbai
+Kaushik BATTER
+Likith BATTER
+Adesh BATTER
+Manikumar BATTER
+Anish WICKET_KEEPER
+Karthik BATTER
+Saikumar BOWLER
+Praneeth BOWLER
+Pradeep BOWLER
+Kushyanth BOWLER
+Aakash BOWLER
