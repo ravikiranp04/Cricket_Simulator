@@ -40,10 +40,10 @@ public class BowlingScoreCard {
         extras+=extraRuns;
     }
 
-    public BigDecimal getOversFinished(){
+    public String getOversFinished(){
         Integer overs = ballsDelivered/6;
         Integer balls = ballsDelivered%6;
-        return new BigDecimal(overs + "." + balls);
+        return overs + "." + balls;
     }
 
     public void increaseBallsDelivered(){

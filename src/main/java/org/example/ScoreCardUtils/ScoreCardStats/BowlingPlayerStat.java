@@ -32,10 +32,10 @@ public class BowlingPlayerStat {
         bowlingScoreCard.increaseBallsDelivered();
     }
 
-    public BigDecimal getOversFinishedByBowler() {
+    public String getOversFinishedByBowler() {
         Integer overs = ballsDelivered/6;
         Integer balls = ballsDelivered%6;
-        return new BigDecimal(overs + "." + balls);
+        return overs + "." + balls;
     }
 
     public Integer getRunsConceeded() {

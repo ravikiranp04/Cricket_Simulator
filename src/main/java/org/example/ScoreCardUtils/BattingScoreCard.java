@@ -79,10 +79,10 @@ public class BattingScoreCard {
         ballsFacedByTeam+=1;
     }
 
-    public BigDecimal getOversFinished(){
+    public String getOversFinished(){
         Integer overs = ballsFacedByTeam/6;
         Integer balls = ballsFacedByTeam%6;
-        return new BigDecimal(overs + "." + balls);
+        return overs + "." + balls;
     }
 
 }

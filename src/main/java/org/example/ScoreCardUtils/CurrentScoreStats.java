@@ -30,10 +30,10 @@ public class CurrentScoreStats {
         this.bowlingScoreCard=bowlingScoreCard;
     }
 
-    public BigDecimal getOversFinishedByBowler(){
+    public String getOversFinishedByBowler(){
         return bowlerBowlingStat.getOversFinishedByBowler();
     }
-    public BigDecimal getOversFinished(){
+    public String getOversFinished(){
         return bowlingScoreCard.getOversFinished();
     }
 
