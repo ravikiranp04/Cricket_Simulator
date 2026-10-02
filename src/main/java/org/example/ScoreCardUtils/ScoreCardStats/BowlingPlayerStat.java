@@ -10,6 +10,8 @@ public class BowlingPlayerStat {
 
 
     private String playerName;
+
+
     private Integer ballsDelivered;
     private Integer runsConceeded;
     private Integer extras;
@@ -87,5 +89,10 @@ public class BowlingPlayerStat {
     public Integer getWicketsTaken() {
         return wicketsTaken;
     }
+
+    public Integer getBallsDelivered() {
+        return ballsDelivered;
+    }
+
 
 }

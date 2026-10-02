@@ -12,6 +12,7 @@ public class BattingScoreCard {
 
     private Team battingTeam;
     private Team bowlingTeam;
+
     Map<String, BattingPlayerStat> playerIdToBattingStatMap;
     private Integer totalRunsScored;
     private Integer ballsFacedByTeam;
@@ -83,6 +84,14 @@ public class BattingScoreCard {
         Integer overs = ballsFacedByTeam/6;
         Integer balls = ballsFacedByTeam%6;
         return overs + "." + balls;
+    }
+
+    public Map<String, BattingPlayerStat> getPlayerIdToBattingStatMap() {
+        return playerIdToBattingStatMap;
+    }
+
+    public Integer getBallsFacedByTeam() {
+        return ballsFacedByTeam;
     }
 
 }

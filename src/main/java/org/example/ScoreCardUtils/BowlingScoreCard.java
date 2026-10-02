@@ -16,6 +16,9 @@ public class BowlingScoreCard {
     private Integer totalRunsConceeded;
     private Integer extras;
     private Integer wicketsTaken;
+
+
+
     Map<String,BowlingPlayerStat> playerIdToBowlingStatMap;
 
     public BowlingScoreCard(Team battingTeam, Team bowlingTeam){
@@ -87,6 +90,10 @@ public class BowlingScoreCard {
 
     public void addWicket(){
         wicketsTaken+=1;
+    }
+
+    public Map<String, BowlingPlayerStat> getPlayerIdToBowlingStatMap() {
+        return playerIdToBowlingStatMap;
     }
 
 }

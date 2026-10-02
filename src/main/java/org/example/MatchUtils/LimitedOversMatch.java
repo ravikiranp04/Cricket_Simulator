@@ -75,11 +75,12 @@ public class LimitedOversMatch implements  Match{
         // set the local batting and bowling score card objects to first innings score card;
         firstInningsScoreCard.setBatAndBowlScoreCards(battingScoreCard,bowlingScoreCard);
 
+        // print innings scorecard
+        log.info(LogUtils.printInningsScoreCard(firstInningsScoreCard));
+
         log.info(String.format("""
         *******************************************************
                     First Innings Finished!!
-                    First Innings Score: %d - %d
-                    Overs: %-20s
         *******************************************************
                     Setting Target..........
         """, battingScoreCard.getTotalRunsScored(),battingScoreCard.getWickets(),battingScoreCard.getOversFinished()));
@@ -105,11 +106,12 @@ public class LimitedOversMatch implements  Match{
         // set the local batting and bowling score card objects to second innings score card;
         secondInningsScoreCard.setBatAndBowlScoreCards(battingScoreCard,bowlingScoreCard);
 
+        // print innings scorecard
+        log.info(LogUtils.printInningsScoreCard(firstInningsScoreCard));
+
         log.info(String.format("""
         *******************************************************
                     Second Innings Finished!!
-                    Second Innings Score: %d - %d
-                    Overs: %-20s
         *******************************************************
         """, battingScoreCard.getTotalRunsScored(),battingScoreCard.getWickets(),battingScoreCard.getOversFinished()));
 
