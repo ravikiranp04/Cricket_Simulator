@@ -1,0 +1,97 @@
+package org.example.ScoreCardUtils;
+
+import org.example.Player;
+import org.example.ScoreCardUtils.ScoreCardStats.BattingPlayerStat;
+import org.example.Team;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+
+public class BattingScoreCard {
+
+    private Team battingTeam;
+    private Team bowlingTeam;
+
+    Map<String, BattingPlayerStat> playerIdToBattingStatMap;
+    private Integer totalRunsScored;
+    private Integer ballsFacedByTeam;
+    private Integer wickets;
+    private Integer extras;
+
+    public BattingScoreCard(Team battingTeam, Team bowlingTeam){
+        this.battingTeam=battingTeam;
+        this.bowlingTeam=bowlingTeam;
+        this.playerIdToBattingStatMap = new HashMap<>();
+        this.extras=0;
+        this.totalRunsScored=0;
+        this.wickets=0;
+        this.ballsFacedByTeam=0;
+    }
+    public Integer getWickets() {
+        return wickets;
+    }
+    public Team getBattingTeam() {
+        return battingTeam;
+    }
+
+    public void increaseTeamsScore(Integer runs){
+        totalRunsScored+=runs;
+    }
+
+    public void addExtras(Integer extraRuns){
+        extras+=extraRuns;
+        //Add extra runs to team score
+        increaseTeamsScore(extraRuns);
+    }
+
+    public Team getBowlingTeam() {
+        return bowlingTeam;
+    }
+    public BattingPlayerStat getPlayerBattingStat(Player player) {
+        String playerId= player.getPlayerId();
+        if(!playerIdToBattingStatMap.containsKey(playerId)){
+            playerIdToBattingStatMap.put(playerId, new BattingPlayerStat(player.getPlayerName(),this));
+        }
+        return playerIdToBattingStatMap.get(playerId);
+    }
+
+    public void addWicket(){
+        wickets+=1;
+    }
+
+    public Integer getTotalRunsScored() {
+        return totalRunsScored;
+    }
+
+    public Integer getExtras() {
+        return extras;
+    }
+
+    public void setTotalRunsScored(Integer totalRunsScored) {
+        this.totalRunsScored = totalRunsScored;
+    }
+
+    public void setExtras(Integer extras) {
+        this.extras = extras;
+    }
+
+    public void increaseBallsFacedByTeam() {
+        ballsFacedByTeam+=1;
+    }
+
+    public String getOversFinished(){
+        Integer overs = ballsFacedByTeam/6;
+        Integer balls = ballsFacedByTeam%6;
+        return overs + "." + balls;
+    }
+
+    public Map<String, BattingPlayerStat> getPlayerIdToBattingStatMap() {
+        return playerIdToBattingStatMap;
+    }
+
+    public Integer getBallsFacedByTeam() {
+        return ballsFacedByTeam;
+    }
+
+}
