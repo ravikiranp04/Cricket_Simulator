@@ -105,4 +105,8 @@ public class CurrentScoreStats {
         return nonStriker;
     }
 
+    public static boolean checkIfTeamAllOut(Integer currentBatterIdx){
+        return currentBatterIdx==10;
+    }
+
 }

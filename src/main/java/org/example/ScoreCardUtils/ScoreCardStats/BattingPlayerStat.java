@@ -1,5 +1,6 @@
 package org.example.ScoreCardUtils.ScoreCardStats;
 
+import org.example.MatchUtils.Dismissal;
 import org.example.Player;
 import org.example.ScoreCardUtils.BattingScoreCard;
 
@@ -15,7 +16,10 @@ public class BattingPlayerStat {
     private Integer sixesHit;
     private Integer foursHit;
     private boolean isOut;
-    private  BattingScoreCard battingScoreCard;
+
+    private BattingScoreCard battingScoreCard;
+    private Dismissal dismissal;
+
     public  BattingPlayerStat(String playerName, BattingScoreCard battingScoreCard){
         this.playerName=playerName;
         this.battingScoreCard=battingScoreCard;
@@ -57,8 +61,8 @@ public class BattingPlayerStat {
         return outReason;
     }
 
-    public void setOutReason(String outReason) {
-        this.outReason = outReason;
+    public void setDismissal(Dismissal dismissal) {
+        this.dismissal = dismissal;
     }
 
     public Integer getBattingScore() {
@@ -79,12 +83,21 @@ public class BattingPlayerStat {
         return isOut;
     }
 
-    public void sendOut(String outReason) {
+    public void sendOut(Dismissal dismissal) {
         isOut = true;
-        setOutReason(outReason);
+        setDismissal(dismissal);
 
         //Add wicket to teams stats
         battingScoreCard.addWicket();
     }
+
+    public Dismissal getDismissal() {
+        return dismissal;
+    }
+
+    public BattingScoreCard getBattingScoreCard() {
+        return battingScoreCard;
+    }
+
 
 }

@@ -16,6 +16,7 @@ public class BowlingPlayerStat {
     private Integer runsConceeded;
     private Integer extras;
     private Integer wicketsTaken;
+
     private BowlingScoreCard bowlingScoreCard;
     public  BowlingPlayerStat(String playerName, BowlingScoreCard bowlingScoreCard){
         this.playerName=playerName;
@@ -57,13 +58,12 @@ public class BowlingPlayerStat {
     }
 
     public void addExtras(Integer extraRuns){
-        extras+=extraRuns;
 
         //Updating team stats
         bowlingScoreCard.addExtras(extraRuns);
 
         // increase bowler runs conceeded
-        increaseRunsConceeded(extraRuns);
+        runsConceeded+=extraRuns;
     }
 
     public void setRunsConceeded(Integer runsConceeded) {
@@ -94,5 +94,7 @@ public class BowlingPlayerStat {
         return ballsDelivered;
     }
 
-
+    public BowlingScoreCard getBowlingScoreCard() {
+        return bowlingScoreCard;
+    }
 }

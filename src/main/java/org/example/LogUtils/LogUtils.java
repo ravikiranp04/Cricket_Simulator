@@ -1,5 +1,7 @@
 package org.example.LogUtils;
 
+import org.example.MatchUtils.Dismissal;
+import org.example.MatchUtils.DismissalType;
 import org.example.ScoreCardUtils.BattingScoreCard;
 import org.example.ScoreCardUtils.BowlingScoreCard;
 import org.example.ScoreCardUtils.CurrentScoreStats;
@@ -79,7 +81,7 @@ public class LogUtils {
                         .setScale(2, BigDecimal.ROUND_HALF_UP);
             }
 
-            String dismissal = playerStat.getOutReason();
+            String dismissal = printDismissal(playerStat.getDismissal());
 
             if (!playerStat.isOut()) {
                 dismissal = "not out";
@@ -169,6 +171,11 @@ public class LogUtils {
         log.append("------------------------------------------------------------\n");
 
         log.append(String.format(
+                "Extras: %d%n",
+                bowlingScoreCard.getExtras()
+        ));
+
+        log.append(String.format(
                 "TOTAL: %d runs, %d wickets%n",
                 bowlingScoreCard.getTotalRunsConceeded(),
                 bowlingScoreCard.getWicketsTaken()
@@ -187,5 +194,27 @@ public class LogUtils {
         return printBattingScoreCard(battingScoreCard)
                 + "\n"
                 + printBowlingScoreCard(bowlingScoreCard);
+    }
+
+    public static String printDismissal(Dismissal dismissal) {
+        if (dismissal == null) {
+            return "not out";
+        }
+
+        switch (dismissal.getDismissalType()) {
+            case BOWLED:
+                return "b " + dismissal.getBowler();
+            case CAUGHT:
+                return "c " + dismissal.getFielder()
+                        + " b " + dismissal.getBowler();
+            case RUN_OUT:
+                return "run out (" + dismissal.getFielder() + ")";
+            case STUMP_OUT:
+                return "st " + dismissal.getFielder()
+                        + " b " + dismissal.getBowler();
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown dismissal type: " + dismissal.getDismissalType());
+        }
     }
 }

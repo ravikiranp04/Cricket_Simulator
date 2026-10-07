@@ -1,19 +1,16 @@
 package org.example.Handlers;
 
-import org.example.MatchUtils.BallType;
-import org.example.Player;
+
+import org.example.MatchUtils.Dismissal;
+import org.example.MatchUtils.DismissalType;
 import org.example.ScoreCardUtils.BattingScoreCard;
 import org.example.ScoreCardUtils.BowlingScoreCard;
-import org.example.ScoreCardUtils.CurrentScoreStats;
 import org.example.ScoreCardUtils.ScoreCardStats.BattingPlayerStat;
 import org.example.ScoreCardUtils.ScoreCardStats.BowlingPlayerStat;
 
 public class WicketAndRunsHandler {
 
-    public static  void handleRuns(Integer runs, CurrentScoreStats currentScoreStats){
-
-        BattingPlayerStat strikerBattingStat  = currentScoreStats.getStrikerBattingStat();
-        BowlingPlayerStat bowlerBowlingStat = currentScoreStats.getBowlerBowlingStat();
+    public static  void handleRuns(Integer runs, BattingPlayerStat strikerBattingStat, BowlingPlayerStat bowlerBowlingStat){
 
         //Update batter stats
         strikerBattingStat.increaseBattingScore(runs);
@@ -23,56 +20,55 @@ public class WicketAndRunsHandler {
         bowlerBowlingStat.increaseRunsConceeded(runs);
 
         //batter and bowler balls faced
-        currentScoreStats.updateBallsDeliveredData();
+        strikerBattingStat.increaseBallsFaced();
+        bowlerBowlingStat.increaseBallsDeliveredByBowler();
 
-        if(runs==4){
+        if(RunsValidator.isFour(runs)){
             strikerBattingStat.increaseFoursHit(); //Updating fours hit in batter stats
         }
-        else if(runs==6){
+        else if(RunsValidator.isSix(runs)){
             strikerBattingStat.increaseSixesHit(); //Updating Sixes hit in batter stats
         }
-
-        //check if striker rotated
-        if(runs%2==1){
-            currentScoreStats.swapStriker();
-        }
     }
 
-    public static void handleCaughtWicket(String caughtFielderName, CurrentScoreStats currentScoreStats){
-        BattingPlayerStat strikerBattingStat  = currentScoreStats.getStrikerBattingStat();
-        BowlingPlayerStat bowlerBowlingStat = currentScoreStats.getBowlerBowlingStat();
+    public static void handleCaughtWicket(String caughtFielderName, BattingPlayerStat strikerBattingStat, BowlingPlayerStat bowlerBowlingStat){
+
+
+        String bowlerName = bowlerBowlingStat.getPlayerName();
 
         //Update batter stats
-        strikerBattingStat.sendOut("c "+caughtFielderName+" \t b "+bowlerBowlingStat.getPlayerName());
+        strikerBattingStat.sendOut(new Dismissal(DismissalType.CAUGHT,caughtFielderName,bowlerName));
 
         //Update bowler and bowling team stats
         bowlerBowlingStat.addWicket();
 
         //batter and bowler balls faced
-        currentScoreStats.updateBallsDeliveredData();;
+        strikerBattingStat.increaseBallsFaced();
+        bowlerBowlingStat.increaseBallsDeliveredByBowler();
     }
 
-    public static void handleBowledWicket(CurrentScoreStats currentScoreStats){
-        BattingPlayerStat strikerBattingStat  = currentScoreStats.getStrikerBattingStat();
-        BowlingPlayerStat bowlerBowlingStat = currentScoreStats.getBowlerBowlingStat();
+    public static void handleBowledWicket(BattingPlayerStat strikerBattingStat, BowlingPlayerStat bowlerBowlingStat){
 
 
-        strikerBattingStat.sendOut("b "+bowlerBowlingStat.getPlayerName());
+        String bowlerName = bowlerBowlingStat.getPlayerName();
+
+        strikerBattingStat.sendOut(new Dismissal(DismissalType.BOWLED,null,bowlerName));
 
 
         //Update bowler and bowling team stats
         bowlerBowlingStat.addWicket();
 
         //batter and bowler balls faced
-        currentScoreStats.updateBallsDeliveredData();;
+        strikerBattingStat.increaseBallsFaced();
+        bowlerBowlingStat.increaseBallsDeliveredByBowler();
     }
 
-    public static void handleRunOut(BattingPlayerStat playerBattingStat,String runOutPlayer,Integer additionalRunsScored, CurrentScoreStats currentScoreStats){
+    public static void handleRunOut(BattingPlayerStat playerBattingStat,String runOutPlayer,Integer additionalRunsScored, BowlingPlayerStat bowlerBowlingStat){
         // Send out batter
-        playerBattingStat.sendOut("(Run Out) "+runOutPlayer);
+        playerBattingStat.sendOut(new Dismissal(DismissalType.RUN_OUT, runOutPlayer, null));
 
-        BowlingPlayerStat bowlerBowlingStat = currentScoreStats.getBowlerBowlingStat();
-        BowlingScoreCard bowlingScoreCard = currentScoreStats.getBowlingScoreCard();
+
+        BowlingScoreCard bowlingScoreCard = bowlerBowlingStat.getBowlingScoreCard();
 
         //updating bowler stats
         bowlerBowlingStat.increaseRunsConceeded(additionalRunsScored);
@@ -81,16 +77,23 @@ public class WicketAndRunsHandler {
         bowlingScoreCard.addWicket();
 
         //update balls delivered by that bowler and team
-        bowlerBowlingStat.increaseBallsDeliveredByBowler();;
+        bowlerBowlingStat.increaseBallsDeliveredByBowler();
     }
 
-    public static void handleNoBall(Integer additionalRuns, CurrentScoreStats currentScoreStats){
-        BattingPlayerStat strikerBattingStat = currentScoreStats.getStrikerBattingStat();
-        BowlingPlayerStat bowlingPlayerStat = currentScoreStats.getBowlerBowlingStat();
-        BattingScoreCard battingScoreCard = currentScoreStats.getBattingScoreCard();
+    public static void handleNoBall(Integer additionalRuns, BattingPlayerStat strikerBattingStat,BowlingPlayerStat bowlingPlayerStat ){
+
+        BattingScoreCard battingScoreCard = strikerBattingStat.getBattingScoreCard();
 
         // updates additional runs for batter
         strikerBattingStat.increaseBattingScore(additionalRuns);
+
+        //if its a four or six, increase count
+        if(RunsValidator.isFour(additionalRuns)){
+            strikerBattingStat.increaseFoursHit();
+        }
+        if(RunsValidator.isSix(additionalRuns)){
+            strikerBattingStat.increaseSixesHit();
+        }
 
         //adds extra no ball run to the team, but not to player
         battingScoreCard.addExtras(1);
@@ -99,12 +102,10 @@ public class WicketAndRunsHandler {
         bowlingPlayerStat.increaseRunsConceeded(additionalRuns);
         bowlingPlayerStat.addExtras(1);
 
+
     }
 
-    public static void handleWide(Integer additionalRuns, CurrentScoreStats currentScoreStats ){
-
-        BowlingPlayerStat bowlingPlayerStat = currentScoreStats.getBowlerBowlingStat();
-        BattingScoreCard battingScoreCard = currentScoreStats.getBattingScoreCard();
+    public static void handleWide(Integer additionalRuns, BattingScoreCard battingScoreCard,BowlingPlayerStat bowlingPlayerStat ){
 
         // wide runs are added as extras to batting team score and bowler stats
         bowlingPlayerStat.addExtras(additionalRuns+1); // additional runs + 1 wide
@@ -112,13 +113,15 @@ public class WicketAndRunsHandler {
 
     }
 
-    public static void handleStumpOut(String wicketKeeperName, CurrentScoreStats currentScoreStats, boolean isWide){
-        BattingPlayerStat strikerBattingStat = currentScoreStats.getStrikerBattingStat();
-        BowlingPlayerStat bowlerBowlingStat = currentScoreStats.getBowlerBowlingStat();
-        BattingScoreCard battingScoreCard = currentScoreStats.getBattingScoreCard();
+    public static void handleStumpOut(String wicketKeeperName,BattingPlayerStat strikerBattingStat,BowlingPlayerStat bowlerBowlingStat, boolean isWide){
+
+        BattingScoreCard battingScoreCard = strikerBattingStat.getBattingScoreCard();
+
+        String bowlerName = bowlerBowlingStat.getPlayerName();
 
         // Update batter and team stats
-        strikerBattingStat.sendOut("(Stump Out) "+wicketKeeperName+" \tb "+bowlerBowlingStat.getPlayerName());
+        strikerBattingStat.sendOut(new Dismissal(DismissalType.STUMP_OUT, wicketKeeperName, bowlerName));
+
         // Update bowler and team stats
         bowlerBowlingStat.addWicket();
 
@@ -130,8 +133,9 @@ public class WicketAndRunsHandler {
             bowlerBowlingStat.addExtras(1);
         }
         else{
-            //update balls delivered by that bowler and team
-            currentScoreStats.updateBallsDeliveredData(); // if not wide, then it s a legal delivery
+            //update balls delivered by that bowler and batter
+            strikerBattingStat.increaseBallsFaced();
+            bowlerBowlingStat.increaseBallsDeliveredByBowler();// if not wide, then it s a legal delivery
         }
     }
 
